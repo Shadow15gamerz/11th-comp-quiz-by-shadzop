@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Computer Science Class 11 – Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f1a;
+    --surface: #151829;
+    --border: #252a45;
+    --accent: #5b6ef5;
+    --accent2: #a78bfa;
+    --text: #e8eaf6;
+    --muted: #7c83a8;
+    --correct: #22c55e;
+    --wrong: #ef4444;
+    --correct-bg: #052e16;
+    --wrong-bg: #2d0707;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    min-height: 100vh;
+    padding: 0 0 60px;
+  }
+  header {
+    background: linear-gradient(135deg, #1a1f3a 0%, #0d0f1a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 28px 24px 22px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; left: 50%; transform: translateX(-50%);
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(91,110,245,0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  header h1 {
+    font-size: clamp(1.4rem, 4vw, 2rem);
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    background: linear-gradient(90deg, #818cf8, #c4b5fd);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  header p {
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin-top: 6px;
+    font-family: 'Space Mono', monospace;
+  }
+  .score-bar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky; top: 0; z-index: 10;
+  }
+  .score-bar span {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  .score-bar .score-val {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--accent2);
+  }
+  .progress-wrap {
+    flex: 1; margin: 0 16px;
+    background: var(--border);
+    border-radius: 99px;
+    height: 6px;
+    overflow: hidden;
+  }
+  #progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 99px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+  .container {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 28px 16px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .question-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px 20px;
+    transition: border-color 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .question-card.correct { border-color: var(--correct); background: #0a1f10; }
+  .question-card.wrong   { border-color: var(--wrong);   background: #1f0a0a; }
+  .q-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+  .q-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    background: var(--border);
+    color: var(--accent2);
+    border-radius: 8px;
+    padding: 3px 9px;
+    white-space: nowrap;
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+  .q-text {
+    font-size: 0.97rem;
+    font-weight: 500;
+    line-height: 1.55;
+    color: var(--text);
+  }
+  /* MCQ Options */
+  .options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 4px;
+  }
+  @media (max-width: 500px) { .options { grid-template-columns: 1fr; } }
+  .option-btn {
+    background: #1c2040;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    font-size: 0.88rem;
+    padding: 11px 14px;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.18s, border-color 0.18s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .option-btn:hover:not(:disabled) {
+    background: #252a50;
+    border-color: var(--accent);
+    transform: translateY(-1px);
+  }
+  .option-btn:disabled { cursor: default; }
+  .option-btn.correct-opt {
+    background: var(--correct-bg);
+    border-color: var(--correct);
+    color: #86efac;
+  }
+  .option-btn.wrong-opt {
+    background: var(--wrong-bg);
+    border-color: var(--wrong);
+    color: #fca5a5;
+  }
+  .opt-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    background: var(--border);
+    border-radius: 5px;
+    padding: 2px 7px;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+  /* Fill-in-the-blank */
+  .fill-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 4px;
+  }
+  .fill-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .fill-input {
+    flex: 1;
+    background: #1c2040;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    font-size: 0.9rem;
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .fill-input:focus { border-color: var(--accent); }
+  .fill-input.correct-input { border-color: var(--correct); background: var(--correct-bg); color: #86efac; }
+  .fill-input.wrong-input   { border-color: var(--wrong);   background: var(--wrong-bg);   color: #fca5a5; }
+  .fill-input:disabled { cursor: default; }
+  .submit-btn {
+    background: var(--accent);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-family: 'Sora', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 10px 18px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    white-space: nowrap;
+  }
+  .submit-btn:hover { background: #4a5ce0; transform: translateY(-1px); }
+  .submit-btn:disabled { background: #333; cursor: default; transform: none; }
+  .feedback {
+    display: none;
+    margin-top: 12px;
+    font-size: 0.84rem;
+    border-radius: 8px;
+    padding: 9px 13px;
+    font-weight: 500;
+  }
+  .feedback.show { display: block; }
+  .feedback.correct-fb { background: var(--correct-bg); color: #86efac; border: 1px solid var(--correct); }
+  .feedback.wrong-fb   { background: var(--wrong-bg);   color: #fca5a5; border: 1px solid var(--wrong); }
+  .status-icon {
+    position: absolute;
+    top: 18px; right: 18px;
+    font-size: 1.4rem;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .question-card.correct .status-icon,
+  .question-card.wrong .status-icon { opacity: 1; }
+  .result-banner {
+    display: none;
+    background: linear-gradient(135deg, #1a1f3a, #0d1328);
+    border: 1.5px solid var(--accent);
+    border-radius: 20px;
+    padding: 32px 24px;
+    text-align: center;
+    margin: 10px 0 30px;
+  }
+  .result-banner.show { display: block; }
+  .result-banner h2 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    background: linear-gradient(90deg, #818cf8, #c4b5fd);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+  }
+  .result-banner p { color: var(--muted); font-size: 0.95rem; }
+  .result-banner .big-score {
+    font-family: 'Space Mono', monospace;
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--accent2);
+    display: block;
+    margin: 16px 0 8px;
+  }
+  .chapter-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    background: #1c2040;
+    padding: 2px 8px;
+    border-radius: 6px;
+    display: inline-block;
+    margin-bottom: 8px;
+  }
+  /* Made by credit */
+  .made-by {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-top: 7px;
+    letter-spacing: 0.3px;
+  }
+  .made-by-link {
+    color: var(--accent2);
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: 700;
+    transition: color 0.2s, text-shadow 0.2s;
+
+  }
+  .made-by-link:hover {
+    color: #c4b5fd;
+    text-shadow: 0 0 8px rgba(167,139,250,0.5);
+  }
+  /* Channel Overlay */
+  .overlay-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.82);
+    backdrop-filter: blur(6px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  }
+  .overlay-backdrop.active { display: flex; }
+  .overlay-box {
+    background: linear-gradient(135deg, #151829 0%, #0d0f1a 100%);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    padding: 36px 28px 28px;
+    max-width: 440px;
+    width: 90%;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 0 60px rgba(91,110,245,0.18);
+  }
+  .overlay-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .overlay-sub {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-bottom: 26px;
+  }
+  .channel-cards {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: nowrap;
+    margin-bottom: 24px;
+  }
+  .channel-card {
+    background: #1c2040;
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    padding: 22px 18px 18px;
+    width: 160px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: border-color 0.2s, transform 0.15s, background 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .channel-card:hover {
+    border-color: #ff0000;
+    background: #1f1020;
+    transform: translateY(-3px);
+  }
+  .channel-logo {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ff0000, #cc0000);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(255,0,0,0.3);
+  }
+  .channel-logo svg { width: 30px; height: 30px; fill: white; }
+  .channel-name {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--text);
+  }
+  .channel-handle {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+  }
+  .back-btn {
+    background: transparent;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    color: var(--muted);
+    font-family: 'Sora', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 10px 26px;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+  }
+  .back-btn:hover {
+    border-color: var(--accent2);
+    color: var(--accent2);
+    background: rgba(167,139,250,0.06);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Computer Science — Class 11</h1>
+  <p>40 Questions · 40 Marks · All Chapters</p>
+  <p class="made-by">made by <span class="made-by-link" onclick="document.getElementById('channelOverlay').classList.add('active')">shadzop</span></p>
+</header>
+
+<!-- Channel Overlay -->
+<div class="overlay-backdrop" id="channelOverlay">
+  <div class="overlay-box">
+    <p class="overlay-title">✦ shadzop's YouTube Channels</p>
+    <p class="overlay-sub">choose a channel to visit</p>
+    <div class="channel-cards">
+      <a class="channel-card" href="https://youtube.com/@shadzop" target="_blank" rel="noopener">
+        <div class="channel-logo">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+        </div>
+        <span class="channel-name">shadzop</span>
+      </a>
+      <a class="channel-card" href="https://youtube.com/@shadzop2" target="_blank" rel="noopener">
+        <div class="channel-logo">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+        </div>
+        <span class="channel-name">shadzop2</span>
+      </a>
+    </div>
+    <button class="back-btn" onclick="document.getElementById('channelOverlay').classList.remove('active')">← Back</button>
+  </div>
+</div>
+
+<div class="score-bar">
+  <span>Score</span>
+  <div class="progress-wrap"><div id="progress-fill"></div></div>
+  <span class="score-val"><span id="score-num">0</span> / 40</span>
+</div>
+
+<div class="container" id="quiz-container"></div>
+
+<script>
+const questions = [
+  // Ch 1 – Multimedia
+  { id:1, ch:"Ch 1 – Multimedia", type:"mcq", q:"Multimedia is a combination of how many main media elements?", options:["Three","Four","Five","Six"], ans:2 },
+  { id:2, ch:"Ch 1 – Multimedia", type:"fill", q:"The digitized form of sound is called ______.", ans:"audio" },
+  { id:3, ch:"Ch 1 – Multimedia", type:"mcq", q:"Which font type has a little decoration at the end of each character?", options:["Sans serif","Serif","Script","Mono"], ans:1 },
+  { id:4, ch:"Ch 1 – Multimedia", type:"fill", q:"._______ is the most popular uncompressed sound format on the internet.", ans:"wav" },
+  { id:5, ch:"Ch 1 – Multimedia", type:"mcq", q:"Which file format is best for recorded music?", options:[".wav",".gif",".mp3",".mpeg"], ans:2 },
+  { id:6, ch:"Ch 1 – Multimedia", type:"fill", q:"A bitmap is a simple matrix of tiny _______ that forms an image.", ans:"dots" },
+  { id:7, ch:"Ch 1 – Multimedia", type:"mcq", q:"In 3D animation, visual changes occur along which three axes?", options:["a, b, c","x, y, z","p, q, r","1, 2, 3"], ans:1 },
+  { id:8, ch:"Ch 1 – Multimedia", type:"mcq", q:"AVI stands for:", options:["Audio Video Interleave","Audio Visual Interface","Animated Video Index","Audio Visual Interleave"], ans:0 },
+  // Ch 2 – Synfig Tool
+  { id:9, ch:"Ch 2 – Animation Tool: Synfig", type:"mcq", q:"Synfig Studio stores animations in which file format?", options:["HTML","PDF","XML","CSV"], ans:2 },
+  { id:10, ch:"Ch 2 – Animation Tool: Synfig", type:"fill", q:"The extension of a Synfig animation file in compressed form is .______.", ans:"sifz" },
+  { id:11, ch:"Ch 2 – Animation Tool: Synfig", type:"mcq", q:"Which tool in Synfig is used to select colour from the canvas?", options:["Transform","Width","Eyedrop","Smooth Move"], ans:2 },
+  { id:12, ch:"Ch 2 – Animation Tool: Synfig", type:"fill", q:"The shortcut key to select multiple ducks together is _______.", ans:"ctrl+a" },
+  { id:13, ch:"Ch 2 – Animation Tool: Synfig", type:"mcq", q:"In Synfig, orange-coloured ducks represent:", options:["Radius of the circle","Position of the object","Vertices (Bline tool)","Curves"], ans:2 },
+  // Ch 3 – Creating Animation
+  { id:14, ch:"Ch 3 – Creating Animation", type:"mcq", q:"The series of frames drawn automatically between keyframes is called:", options:["Rendering","Tweening","Looping","Scripting"], ans:1 },
+  { id:15, ch:"Ch 3 – Creating Animation", type:"fill", q:"Tweening animation is also known as _______ animation.", ans:"cel" },
+  { id:16, ch:"Ch 3 – Creating Animation", type:"mcq", q:"The orange indicator in Synfig's timeline shows:", options:["Layer order","Position in time","Frame count","Render status"], ans:1 },
+  // Ch 4 – Introduction to Layers
+  { id:17, ch:"Ch 4 – Introduction to Layers", type:"mcq", q:"Which panel is used to view parameters of any layer in Synfig?", options:["Layers Panel","Params Panel","Navigator","History Panel"], ans:1 },
+  { id:18, ch:"Ch 4 – Introduction to Layers", type:"fill", q:"_______ gives effects to various objects without changing other objects in the animation.", ans:"encapsulation" },
+  { id:19, ch:"Ch 4 – Introduction to Layers", type:"mcq", q:"When encapsulate option is selected, the new layer is named:", options:["Base canvas","Root layer","Inline canvas","Group layer"], ans:2 },
+  // Ch 5 – Pictures in Synfig
+  { id:20, ch:"Ch 5 – Using Pictures in Synfig", type:"mcq", q:"Which menu option is used to import an image onto the Synfig canvas?", options:["Edit → Import","File → Import","Layer → Import","View → Import"], ans:1 },
+  { id:21, ch:"Ch 5 – Using Pictures in Synfig", type:"fill", q:"SWF stands for _______.", ans:"shockwave flash" },
+  { id:22, ch:"Ch 5 – Using Pictures in Synfig", type:"mcq", q:"SWFTOOLS is used for:", options:["Editing images","Converting files to SWF format","Creating databases","Writing shell scripts"], ans:1 },
+  // Ch 6 – Linux Commands
+  { id:23, ch:"Ch 6 – Basic Ubuntu Linux Commands", type:"fill", q:"The shortcut key to open the terminal window is CTRL + ALT + _______.", ans:"t" },
+  { id:24, ch:"Ch 6 – Basic Ubuntu Linux Commands", type:"mcq", q:"Which command is used to display a calendar in Linux?", options:["date","cal","calendar","time"], ans:1 },
+  { id:25, ch:"Ch 6 – Basic Ubuntu Linux Commands", type:"mcq", q:"The 'man' command is used to:", options:["Manage users","Get complete information about a command","View processes","Change permissions"], ans:1 },
+  { id:26, ch:"Ch 6 – Basic Ubuntu Linux Commands", type:"fill", q:"The _______ command is used to change file permissions in Linux.", ans:"chmod" },
+  { id:27, ch:"Ch 6 – Basic Ubuntu Linux Commands", type:"mcq", q:"The pipe ( | ) symbol is used to:", options:["Redirect input","Compare two files","Pass output of one command as input to another","List directory contents"], ans:2 },
+  { id:28, ch:"Ch 6 – Basic Ubuntu Linux Commands", type:"fill", q:"The _______ command finds a pattern in a file.", ans:"grep" },
+  // Ch 7 – Vim & Scripting
+  { id:29, ch:"Ch 7 – Vim Editor & Basic Scripting", type:"mcq", q:"In Vim editor, which key toggles between command mode and insert mode?", options:["Tab","Shift","ESC","Ctrl"], ans:2 },
+  { id:30, ch:"Ch 7 – Vim Editor & Basic Scripting", type:"fill", q:"To solve arithmetic operations in a shell script, we use the _______ command.", ans:"expr" },
+  { id:31, ch:"Ch 7 – Vim Editor & Basic Scripting", type:"mcq", q:"The tilde (~) symbol in Vim editor indicates:", options:["Saved file","Lines yet to be used","Insert mode active","End of file"], ans:1 },
+  // Ch 8 – Advanced Scripting
+  { id:32, ch:"Ch 8 – Advanced Scripting", type:"mcq", q:"Which command is used to remove a process from memory in Linux?", options:["delete","remove","kill","stop"], ans:2 },
+  { id:33, ch:"Ch 8 – Advanced Scripting", type:"fill", q:"Linux provides three loops: for, while and _______.", ans:"until" },
+  { id:34, ch:"Ch 8 – Advanced Scripting", type:"mcq", q:"The while loop executes until the condition is:", options:["False","True","Null","Zero"], ans:1 },
+  // Ch 9 – DBMS
+  { id:35, ch:"Ch 9 – Introduction to DBMS", type:"fill", q:"RDBMS stands for _______.", ans:"relational database management system" },
+  { id:36, ch:"Ch 9 – Introduction to DBMS", type:"mcq", q:"A field or combination of fields that identifies each record uniquely is called:", options:["Foreign key","Composite key","Primary key","Candidate key"], ans:2 },
+  // Ch 10 – Working with Tables
+  { id:37, ch:"Ch 10 – Working with Tables", type:"mcq", q:"The most common type of relationship between database tables is:", options:["One-to-one","Many-to-many","One-to-many","Many-to-one"], ans:2 },
+  // Ch 11 – Queries
+  { id:38, ch:"Ch 11 – Retrieving Data using Queries", type:"fill", q:"The SQL keyword used to retrieve records based on criteria is _______.", ans:"where" },
+  // Ch 12 – Forms & Reports
+  { id:39, ch:"Ch 12 – Forms and Reports", type:"mcq", q:"A dynamic report allows users to:", options:["Print only PDF","See effects of changes made in the table","Delete records","Import images"], ans:1 },
+  // Ch 13 – Current Trends
+  { id:40, ch:"Ch 13 – Current Trends and Technologies", type:"mcq", q:"Bluetooth is primarily used for:", options:["Long-distance satellite communication","Wireless internet at high speed","Exchanging data over short distances","GPS navigation"], ans:2 },
+];
+
+let score = 0;
+let answered = 0;
+
+function updateScorebar() {
+  document.getElementById('score-num').textContent = score;
+  document.getElementById('progress-fill').style.width = (answered / 40 * 100) + '%';
+  if (answered === 40) showResult();
+}
+
+function showResult() {
+  const banner = document.getElementById('result-banner');
+  banner.classList.add('show');
+  const pct = Math.round(score / 40 * 100);
+  let msg = pct >= 80 ? "🎉 Excellent! Outstanding performance!" :
+            pct >= 60 ? "👍 Good effort! Keep practising." :
+            "📚 Review your notes and try again!";
+  banner.querySelector('.big-score').textContent = score + " / 40";
+  banner.querySelector('.result-msg').textContent = msg + " (" + pct + "%)";
+}
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+
+  const banner = document.createElement('div');
+  banner.className = 'result-banner';
+  banner.id = 'result-banner';
+  banner.innerHTML = `<h2>Quiz Complete!</h2><span class="big-score"></span><p class="result-msg"></p>`;
+  container.appendChild(banner);
+
+  questions.forEach((q, i) => {
+    const card = document.createElement('div');
+    card.className = 'question-card';
+    card.id = 'card-' + q.id;
+
+    let optionsHTML = '';
+    if (q.type === 'mcq') {
+      const labels = ['A','B','C','D'];
+      optionsHTML = `<div class="options">` + q.options.map((o, oi) =>
+        `<button class="option-btn" data-qi="${q.id}" data-oi="${oi}" onclick="checkMCQ(${q.id}, ${oi}, ${q.ans})">
+          <span class="opt-label">${labels[oi]}</span>${o}
+        </button>`
+      ).join('') + `</div>`;
+    } else {
+      optionsHTML = `<div class="fill-wrap">
+        <div class="fill-row">
+          <input type="text" class="fill-input" id="fill-${q.id}" placeholder="Type your answer…" onkeydown="if(event.key==='Enter') submitFill(${q.id})">
+          <button class="submit-btn" id="sbtn-${q.id}" onclick="submitFill(${q.id})">Submit</button>
+        </div>
+      </div>`;
+    }
+
+    card.innerHTML = `
+      <span class="status-icon" id="icon-${q.id}"></span>
+      <div class="chapter-tag">${q.ch}</div>
+      <div class="q-header">
+        <span class="q-num">Q${String(i+1).padStart(2,'0')}</span>
+        <span class="q-text">${q.q}</span>
+      </div>
+      ${optionsHTML}
+      <div class="feedback" id="fb-${q.id}"></div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function checkMCQ(qid, chosen, correct) {
+  const card = document.getElementById('card-' + qid);
+  if (card.classList.contains('correct') || card.classList.contains('wrong')) return;
+
+  const btns = card.querySelectorAll('.option-btn');
+  btns.forEach(b => b.disabled = true);
+
+  const fb = document.getElementById('fb-' + qid);
+  const icon = document.getElementById('icon-' + qid);
+
+  if (chosen === correct) {
+    btns[chosen].classList.add('correct-opt');
+    card.classList.add('correct');
+    icon.textContent = '✅';
+    fb.textContent = '✓ Correct!';
+    fb.className = 'feedback show correct-fb';
+    score++;
+  } else {
+    btns[chosen].classList.add('wrong-opt');
+    btns[correct].classList.add('correct-opt');
+    card.classList.add('wrong');
+    icon.textContent = '❌';
+    const labels = ['A','B','C','D'];
+    fb.textContent = `✗ Wrong! Correct answer: (${labels[correct]}) ${questions.find(q=>q.id===qid).options[correct]}`;
+    fb.className = 'feedback show wrong-fb';
+  }
+  answered++;
+  updateScorebar();
+}
+
+function submitFill(qid) {
+  const inp = document.getElementById('fill-' + qid);
+  const btn = document.getElementById('sbtn-' + qid);
+  if (btn.disabled) return;
+
+  const userAns = inp.value.trim().toLowerCase();
+  const q = questions.find(x => x.id === qid);
+  const correctAns = q.ans.toLowerCase();
+
+  inp.disabled = true;
+  btn.disabled = true;
+
+  const card = document.getElementById('card-' + qid);
+  const fb = document.getElementById('fb-' + qid);
+  const icon = document.getElementById('icon-' + qid);
+
+  if (userAns === correctAns) {
+    inp.classList.add('correct-input');
+    card.classList.add('correct');
+    icon.textContent = '✅';
+    fb.textContent = '✓ Correct!';
+    fb.className = 'feedback show correct-fb';
+    score++;
+  } else {
+    inp.classList.add('wrong-input');
+    card.classList.add('wrong');
+    icon.textContent = '❌';
+    fb.textContent = `✗ Wrong! Correct answer: ${q.ans}`;
+    fb.className = 'feedback show wrong-fb';
+  }
+  answered++;
+  updateScorebar();
+}
+
+renderQuiz();
+</script>
+</body>
+</html>
+
